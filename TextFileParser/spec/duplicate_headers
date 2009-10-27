@@ -1,0 +1,8 @@
+[duplicated section]
+irrelevent : value
+
+[unduplicated section]
+key1 : good
+
+[duplicated section]
+another: bad key
