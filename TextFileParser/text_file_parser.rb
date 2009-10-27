@@ -33,9 +33,17 @@ class TextFileParser
     section[key_name]
   end
 
+  def set_value_for(section_name, key_name, value, filepath=nil)
+    section_name = section_name.to_sym if section_name.respond_to?(:to_sym)
+    key_name = key_name.to_sym if key_name.respond_to?(:to_sym)
+
+    write_value_at section_name, key_name, value
+    write_file filepath || @filepath
+  end
+
   def pairs_for(section_name)
     section_name = section_name.to_sym if section_name.respond_to?(:to_sym)
-    raise TextFileParserError, "Section #{} is not defined" unless @configuration.include? section_name
+    raise TextFileParserError, "Section #{section_name} is not defined" unless @configuration.include? section_name
 
     @configuration[ section_name ]
   end
@@ -46,6 +54,7 @@ class TextFileParser
     @configuration = { }
     @current_section = nil
     @current_value = nil
+    @max_line_length = 80
   end
 
   def parse_line
@@ -115,5 +124,48 @@ class TextFileParser
 
   def write_value_at( section_name, key_name, value )
     @configuration[ section_name ].merge! key_name => value
+  end
+
+  def write_file(filepath)
+    raise TextFileParserError, "Cannot save without a file name" if filepath.nil? || filepath.strip.empty?
+    
+    file = File.open filepath, "w"
+    @configuration.each do |section_name, pairs|
+      file << "[#{section_name}]\n"
+
+      pairs.each do |key, value|
+        add_key_value_pair_to_file key, value, file
+      end
+    end
+    
+    file.close
+  end
+  
+  def add_key_value_pair_to_file(key, value, file)
+    if key.to_s.length+value.length <= @max_line_length
+      append_simple_key_value_pair key, value, file
+    else
+      append_extended_key_value_pair key, value, file
+    end
+  end
+
+  def append_simple_key_value_pair( key, value, file )
+    file << "#{key} : #{value}\n" 
+  end
+
+  def append_extended_key_value_pair( key, value, file )
+    words = value.split /\s/
+    line = "#{key} : #{words.shift}"
+
+    words.each do |word|
+      if line.length + word.length < @max_line_length
+        line << " " << word
+      else
+        file << line << "\n"
+        line = " "
+      end
+    end
+    
+    file << line << "\n" if line.length > 0
   end
 end
