@@ -45,6 +45,7 @@ class TextFileParser
     @filepath = ""
     @configuration = { }
     @current_section = nil
+    @current_value = nil
   end
 
   def parse_line
@@ -76,6 +77,7 @@ class TextFileParser
     raise TextFileParserError, "File cannot contain duplicate section names" if section_defined?
 
     @configuration[ @current_section ] = { } 
+    @current_value = nil
   end
 
   def extract_section_name
@@ -94,7 +96,7 @@ class TextFileParser
     @current_key = key.to_sym
     raise TextFileParserError, "Keys within a section must be unique" if @configuration[ @current_section ].include? @current_key
 
-    @configuration[ @current_section ].merge! key.to_sym => value
+    write_value_at( @current_section, @current_key, value )
   end
 
   def extract_key_and_value
@@ -102,5 +104,16 @@ class TextFileParser
   end
 
   def extend_value_of_current_key
+    raise TextFileParserError, "A key name must begin in the first column of the file." if @current_key.nil?
+
+    section = pairs_for @current_section
+    value = section[ @current_key ]
+
+    value << " " << @current_line.strip
+    write_value_at( @current_section, @current_key, value )
+  end
+
+  def write_value_at( section_name, key_name, value )
+    @configuration[ section_name ].merge! key_name => value
   end
 end

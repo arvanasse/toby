@@ -32,4 +32,8 @@ describe TextFileParser do
       @parser.get_value_for(section_name, :budget).should eql(value)
     end
   end
+
+  it "should allow long value lines to be wrapped onto subsequent lines by beginning the subsequent lines with a blank" do
+    @parser.get_value_for(:"meta data", :description).should == "This is a tediously long description of this programming test that you are taking. Tedious isn't the right word, but it's the first word that comes to mind." 
+  end
 end
