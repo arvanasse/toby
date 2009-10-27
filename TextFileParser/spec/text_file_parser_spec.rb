@@ -16,7 +16,7 @@ describe TextFileParser do
   end
 
   it "should have key-value pairs defined for each key-value definition under the section headers" do
-    {:header => 3, :"meta data" => 1}.each do |section_name, number_of_pairs|
+    {:header => 3, :"meta data" => 2}.each do |section_name, number_of_pairs|
       @parser.pairs_for(section_name).should have(number_of_pairs).entries
     end
   end
@@ -28,8 +28,8 @@ describe TextFileParser do
   end
 
   it "should allow key names to be reused in different sections" do
-    {:header => "205", :"file info" => "210"}.each do |section_name, value|
-      @parser.get_value_for(section_name, :accessed).should eql(value)
+    {:header => "4.5", :trailer => "all out of budget."}.each do |section_name, value|
+      @parser.get_value_for(section_name, :budget).should eql(value)
     end
   end
 end
