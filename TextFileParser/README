@@ -1,0 +1,22 @@
+To verify this you can either:
+
+irb
+> require 'text_file_parser'
+rb(main):001:0> require 'text_file_parser'
+=> true
+
+irb(main):002:0> parser = TextFileParser.new 'spec/sample'
+=> #<TextFileParser:0x192ef4 @filepath="spec/sample", ... >
+
+irb(main):003:0> val = parser.get_value_for('meta data', :description).gsub(/tedious/i, 'Moderate')
+=> "This is a Moderately long description of this programming test that you are taking. Moderate isn't the right word, but it's the first word that comes to mind."
+
+irb(main):004:0> parser.set_value_for 'meta data', :description, val, 'spec/sample_updated'
+=> nil
+
+--- OR --- 
+Check and run the specs.
+
+One note on this.  I provided an optional file path parameter on the method that updates a configuration value
+so that you can repeat the tests without having to recreate the sample data.  Invoking the method without 
+supplying the file name will cause the source file to be re-written.
