@@ -1,40 +1,74 @@
 class FixedPoint
   def initialize( original )
-    @bitmap = (0..31).inject([ ]) do |map, pwr|
-      bit = 1<<pwr
-      map.push( (original & bit) / bit )
-    end
+    initialize_bitmap(original)
   end
 
   def value
     negative? ? -1 * abs : abs
   end
+  alias_method :to_f, :value
 
   def abs
     integer + fraction
   end
 
   def inspect
-    to_hex
+    value.to_s
+  end
+
+  def to_packed
+    sum_of_bits(@bitmap)
   end
 
   def negative?
     @bitmap.last==1
   end
 
+  def <=>(other)
+    value<=>other.value
+  end
+
   class << self
+    def new(original)
+      return from_float(original) if original.is_a?(Float)
+      super
+    end
+
     def from_fixnum( original )
       new( original )
     end
 
     def from_float( original )
       sign = original<0 ? 0x8000_0000 : 0
-      int_val = original.abs.truncate << 15
-      new( sign | int_val )
+
+      abs = original.abs
+      int_val = abs.truncate << 15
+
+      fractional_val = fraction_to_packed( abs - abs.truncate )
+
+      new( sign | int_val | fractional_val )
+    end
+
+    def fraction_to_packed(frac)
+      (0..14).inject([0, frac]) do |map, pwr|
+        current_val = 1.0 / (2<<pwr)
+        if map.last >= current_val
+          [map.first + (1<<(14-pwr)), map.last - current_val]
+        else
+          map
+        end
+      end.first
     end
   end
 
   private
+  def initialize_bitmap( original )
+    @bitmap = (0..31).inject([ ]) do |map, pwr|
+      bit = 1<<pwr
+      map.push( (original & bit) / bit )
+    end
+  end
+
   def integer
     sum_of_bits integer_bits
   end
@@ -42,10 +76,6 @@ class FixedPoint
   def fraction
     return 0.0 if fraction_bits.all?{|bit| bit.zero? }
     fraction_from_bits fraction_bits
-  end
-
-  def to_hex
-    "0x%08x" % sum_of_bits(@bitmap)
   end
 
   def integer_bits
