@@ -104,3 +104,23 @@ class FixedPoint
     end
   end
 end
+
+
+
+module FloatToFixed
+  def to_fixedpt
+    FixedPoint.from_float( self )
+  end
+end
+Float.send(:include, FloatToFixed)
+
+
+
+module PackedToFixed
+  def to_fixedpt
+    FixedPoint.new(self)
+  end
+end
+Fixnum.send(:include, PackedToFixed)
+Bignum.send(:include, PackedToFixed)
+

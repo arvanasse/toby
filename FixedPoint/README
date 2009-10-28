@@ -1,0 +1,47 @@
+Fire up irb, require 'fixed_point', and you can create a FixedPoint object
+from both the packed notation and fixed point notation.
+
+> irb
+irb(main):001:0> require 'fixed_point'
+=> true
+irb(main):002:0> FixedPoint.new 0x0000_8000
+=> 1.0
+irb(main):003:0> FixedPoint.new 0x8000_8000
+=> -1.0
+irb(main):004:0> FixedPoint.new 0x0001_0000
+=> 2.0
+irb(main):005:0> FixedPoint.new 0x8001_4000
+=> -2.5
+irb(main):006:0> "0x%08x" % FixedPoint.new(-2.75).to_packed
+=> "0x80016000"
+
+
+Note that there are #from_float and #from_packed methods at the class level 
+that could be used to help other numeric classes convert themselves to FixedPoint.
+An example appears in the form of a pair of modules mixed into Float, Fixnum, and
+Bignum at the end of the source.
+
+> irb
+irb(main):002:0> require 'fixed_point'
+=> true
+irb(main):003:0> 0x8001_6000.to_fixedpt
+=> -2.75
+irb(main):004:0> exit
+lt-108:FixedPoint arvanasse$ irb
+irb(main):001:0> require 'fixed_point'
+=> true
+irb(main):002:0> flt = 2.75
+=> 2.75
+irb(main):003:0> fp = flt.to_fixedpt
+=> 2.75
+irb(main):004:0> fp.class.name
+=> "FixedPoint"
+irb(main):005:0> packed = fp.to_packed
+=> 90112
+irb(main):006:0> "0x%08x" % packed
+=> "0x00016000"
+irb(main):007:0> fp2 = packed.to_fixedpt
+=> 2.75
+irb(main):008:0> fp2.class.name
+=> "FixedPoint"
+
